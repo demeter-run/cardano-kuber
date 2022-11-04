@@ -1,9 +1,9 @@
 resource "kubernetes_deployment_v1" "kuber" {
   metadata {
     labels = {
-      app = local.kuber_name
+      app = local.instance_name
     }
-    name      = local.kuber_name
+    name      = local.instance_name
     namespace = var.namespace
   }
 
@@ -16,14 +16,16 @@ resource "kubernetes_deployment_v1" "kuber" {
 
     selector {
       match_labels = {
-        app = local.kuber_name
+        network = var.network
+        role    = "kuber"
       }
     }
 
     template {
       metadata {
         labels = {
-          app = local.kuber_name
+          network = var.network
+          role    = "kuber"
         }
       }
 
@@ -55,6 +57,11 @@ resource "kubernetes_deployment_v1" "kuber" {
             requests = var.kuber_resources.requests
           }
 
+          port {
+            container_port = 8081
+            name           = "http"
+          }
+
           env {
             name  = "NETWORK"
             value = var.network
@@ -83,7 +90,7 @@ resource "kubernetes_deployment_v1" "kuber" {
 resource "kubernetes_service_v1" "kuber" {
   metadata {
     namespace = var.namespace
-    name      = "kuber-${var.network}"
+    name      = local.instance_name
   }
   spec {
     selector = {
@@ -106,7 +113,7 @@ resource "kubernetes_service_v1" "kuber" {
 resource "kubernetes_ingress_v1" "kuber" {
   wait_for_load_balancer = true
   metadata {
-    name      = "kuber-${var.network}"
+    name      = local.instance_name
     namespace = var.namespace
     annotations = {
       "cert-manager.io/cluster-issuer" = "letsencrypt"
