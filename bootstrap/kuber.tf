@@ -8,7 +8,7 @@ resource "kubernetes_deployment_v1" "kuber" {
   }
 
   spec {
-    replicas = 1
+    replicas = var.replicas
 
     strategy {
       type = "Recreate"
@@ -106,40 +106,5 @@ resource "kubernetes_service_v1" "kuber" {
     }
 
     type = "ClusterIP"
-  }
-}
-
-
-resource "kubernetes_ingress_v1" "kuber" {
-  wait_for_load_balancer = true
-  metadata {
-    name      = local.instance_name
-    namespace = var.namespace
-    annotations = {
-      "cert-manager.io/cluster-issuer" = "letsencrypt"
-    }
-  }
-  spec {
-    ingress_class_name = "nginx"
-    rule {
-      host = "kuber-${var.network}.${var.dns_zone}"
-      http {
-        path {
-          path = "/"
-
-          backend {
-            service {
-              name = "kuber-${var.network}"
-              port {
-                number = 8081
-              }
-            }
-          }
-        }
-      }
-    }
-    tls {
-      hosts = ["*.${var.dns_zone}"]
-    }
   }
 }

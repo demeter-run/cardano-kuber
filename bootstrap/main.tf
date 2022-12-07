@@ -13,8 +13,12 @@ variable "network" {}
 
 variable "dns_zone" {}
 
+variable "replicas" {
+  default = 1
+}
+
 variable "kuber_image_tag" {
-  default = "2.1.0"
+  default = "2.2.0"
 }
 
 variable "kuber_resources" {
